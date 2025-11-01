@@ -305,20 +305,26 @@
         }
 
         .share-btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 10px;
+            padding: 1rem;
+            border-radius: 50%;
             border: none;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+        }
+
+        .share-btn span:not(:first-child) {
+            display: none;
         }
 
         .share-btn:hover {
-            transform: translateY(-2px);
+            transform: translateY(-2px) scale(1.1);
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
 
@@ -331,6 +337,11 @@
             background: rgba(255, 255, 255, 0.2);
             color: white;
             border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .share-btn-copy.copied {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: rgba(76, 175, 80, 0.6);
         }
 
         .share-btn-native {
@@ -411,17 +422,14 @@
                     <h3 style="color: #ffd43b; margin-bottom: 0.5rem;">Share Your Results!</h3>
                     <p style="opacity: 0.9; font-size: 0.9rem;">Show off your clicking skills</p>
                     <div class="share-buttons">
-                        <button class="share-btn share-btn-twitter" onclick="shareToTwitter()">
+                        <button class="share-btn share-btn-twitter" onclick="shareToTwitter()" title="Share on Twitter">
                             <span>🐦</span>
-                            <span>Share on Twitter</span>
                         </button>
-                        <button class="share-btn share-btn-copy" onclick="copyLink()">
+                        <button class="share-btn share-btn-copy" onclick="copyLink()" title="Copy results to clipboard">
                             <span>🔗</span>
-                            <span id="copyBtnText">Copy Link</span>
                         </button>
-                        <button class="share-btn share-btn-native" onclick="shareNative()" id="nativeShareBtn" style="display: none;">
+                        <button class="share-btn share-btn-native" onclick="shareNative()" id="nativeShareBtn" style="display: none;" title="Share">
                             <span>📱</span>
-                            <span>Share</span>
                         </button>
                     </div>
                 </div>
@@ -622,12 +630,16 @@
         }
 
         function copyLink() {
-            const url = 'https://www.justabutton.org';
-            navigator.clipboard.writeText(url).then(() => {
-                const btnText = document.getElementById('copyBtnText');
-                btnText.textContent = 'Copied! ✓';
+            const text = `I clicked the button in ${userPerformance.time}s on JustAButton! ${userPerformance.rank} ${userPerformance.comparison} Can you beat my time? https://www.justabutton.org`;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.querySelector('.share-btn-copy');
+                const icon = btn.querySelector('span:first-child');
+                const originalIcon = icon.textContent;
+                icon.textContent = '✓';
+                btn.classList.add('copied');
                 setTimeout(() => {
-                    btnText.textContent = 'Copy Link';
+                    icon.textContent = originalIcon;
+                    btn.classList.remove('copied');
                 }, 2000);
             }).catch(err => {
                 console.error('Failed to copy:', err);
