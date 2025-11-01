@@ -30,9 +30,11 @@ def get_ip2location_db():
     """Get or initialize IP2Location database"""
     global IP2LOC_DATABASE
     if IP2LOC_DATABASE is None:
-        # Look for BIN file in the project root
-        db_path = os.path.join(settings.BASE_DIR, 'IP2LOCATION-LITE-DB11.BIN')
-        if os.path.exists(db_path):
+        # Look for any BIN file in the project root
+        import glob
+        bin_files = glob.glob(os.path.join(settings.BASE_DIR, '*.BIN'))
+        if bin_files:
+            db_path = bin_files[0]  # Use the first BIN file found
             IP2LOC_DATABASE = IP2Location.IP2Location(db_path)
     return IP2LOC_DATABASE
 
