@@ -801,14 +801,19 @@
 
                         document.getElementById('yourRank').textContent = estimatedRank;
                         document.getElementById('rankComparison').textContent = rankInfo;
+
+                        // Update userPerformance for sharing
+                        userPerformance.time = yourTime.toFixed(2);
+                        userPerformance.rank = estimatedRank;
+                        userPerformance.comparison = comparison;
+                    } else {
+                        // Update userPerformance even without rank
+                        userPerformance.time = yourTime.toFixed(2);
+                        userPerformance.rank = '';
+                        userPerformance.comparison = comparison;
                     }
 
                     document.getElementById('yourComparison').textContent = comparison;
-
-                    // Update userPerformance for sharing
-                    userPerformance.time = yourTime.toFixed(2);
-                    userPerformance.rank = estimatedRank;
-                    userPerformance.comparison = comparison;
                 }
 
                 // Create country charts
