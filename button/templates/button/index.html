@@ -82,6 +82,15 @@
             background: linear-gradient(145deg, #51cf66, #37b24d);
         }
 
+        #theButton:disabled {
+            opacity: 0.9;
+        }
+
+        #theButton:disabled:hover {
+            transform: scale(1);
+            cursor: not-allowed;
+        }
+
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.1); }
@@ -267,7 +276,7 @@
 <body>
     <header>
         <h1>JustAButton</h1>
-        <p class="subtitle">One button. Endless curiosity.</p>
+        <p class="subtitle">One button. One chance. Forever.</p>
     </header>
 
     <div class="container">
@@ -358,6 +367,21 @@
         let hasClicked = false;
         let countryChart = null;
         let timeChart = null;
+
+        // Check if user has already clicked (using localStorage)
+        const STORAGE_KEY = 'justabutton_clicked';
+        const clickData = localStorage.getItem(STORAGE_KEY);
+        let previousClickTime = null;
+
+        if (clickData) {
+            try {
+                const data = JSON.parse(clickData);
+                hasClicked = true;
+                previousClickTime = data.time;
+            } catch (e) {
+                console.error('Error parsing click data:', e);
+            }
+        }
 
         // Country code to flag emoji mapping
         const countryCodeToFlag = (code) => {
@@ -617,16 +641,51 @@
             }());
         }
 
+        // Set button state based on previous click
+        function setButtonState(alreadyClicked, time = null) {
+            const button = document.getElementById('theButton');
+
+            if (alreadyClicked) {
+                button.classList.add('clicked');
+                button.style.cursor = 'not-allowed';
+                button.querySelector('.button-text').innerHTML = '✅ Already Clicked!<br><small style="font-size: 1rem; opacity: 0.8;">You\'re in the club!</small>';
+                button.disabled = true;
+            }
+        }
+
         // Button click handler
         document.getElementById('theButton').addEventListener('click', async function() {
-            if (hasClicked) return;
+            if (hasClicked) {
+                // Show a fun message
+                const messages = [
+                    '🚫 Nice try! One click per person!',
+                    '⚠️ You already clicked! No double-dipping!',
+                    '🎯 Your moment has passed, my friend!',
+                    '💫 Once in a lifetime opportunity already used!',
+                    '🔒 The button remembers you!',
+                ];
+                const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+                this.querySelector('.button-text').innerHTML = randomMsg;
+
+                setTimeout(() => {
+                    this.querySelector('.button-text').innerHTML = '✅ Already Clicked!<br><small style="font-size: 1rem; opacity: 0.8;">You\'re in the club!</small>';
+                }, 2000);
+                return;
+            }
 
             hasClicked = true;
             const timeElapsed = (Date.now() - pageLoadTime) / 1000;
 
+            // Save to localStorage - this is permanent!
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                time: timeElapsed,
+                timestamp: new Date().toISOString()
+            }));
+
             // Visual feedback
             this.classList.add('clicked');
-            this.querySelector('.button-text').textContent = '🎉 Clicked!';
+            this.style.cursor = 'not-allowed';
+            this.querySelector('.button-text').innerHTML = '🎉 Clicked!<br><small style="font-size: 1rem; opacity: 0.8;">Welcome to the club!</small>';
 
             // Fire confetti
             fireConfetti();
@@ -636,13 +695,26 @@
 
             // Load and display stats
             await loadStats(timeElapsed);
+
+            // Update button text after confetti
+            setTimeout(() => {
+                this.querySelector('.button-text').innerHTML = '✅ Already Clicked!<br><small style="font-size: 1rem; opacity: 0.8;">You\'re in the club!</small>';
+            }, 3000);
         });
 
         // Initialize on page load
         window.addEventListener('load', async function() {
             await initSession();
-            // Load stats immediately so users can see everyone's data
-            await loadStats();
+
+            // Check if user has already clicked
+            if (previousClickTime !== null) {
+                setButtonState(true, previousClickTime);
+                // Show their previous time in the stats
+                await loadStats(previousClickTime);
+            } else {
+                // Load stats without personal time
+                await loadStats();
+            }
         });
     </script>
 </body>
