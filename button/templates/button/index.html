@@ -403,7 +403,7 @@
         }
 
         // Fetch and display stats
-        async function loadStats(yourTime) {
+        async function loadStats(yourTime = null) {
             try {
                 const response = await fetch('/api/stats/');
                 const stats = await response.json();
@@ -416,7 +416,22 @@
                 document.getElementById('fastestClick').textContent = stats.fastest_click ? stats.fastest_click.toFixed(2) + 's' : '-';
                 document.getElementById('slowestClick').textContent = stats.slowest_click ? stats.slowest_click.toFixed(2) + 's' : '-';
                 document.getElementById('bounceRate').textContent = stats.bounce_rate.toFixed(1) + '%';
-                document.getElementById('yourTime').textContent = yourTime.toFixed(2) + 's';
+
+                // Update "Your Time" - show special message if not clicked yet
+                const yourTimeEl = document.getElementById('yourTime');
+                if (yourTime !== null) {
+                    yourTimeEl.textContent = yourTime.toFixed(2) + 's';
+                    // Highlight the user's time with animation
+                    yourTimeEl.parentElement.style.background = 'rgba(255, 215, 0, 0.3)';
+                    yourTimeEl.parentElement.style.transform = 'scale(1.05)';
+                    setTimeout(() => {
+                        yourTimeEl.parentElement.style.background = '';
+                        yourTimeEl.parentElement.style.transform = '';
+                    }, 2000);
+                } else {
+                    yourTimeEl.textContent = 'Click to see!';
+                    yourTimeEl.style.fontSize = '1.5rem';
+                }
 
                 // Create country charts
                 if (stats.country_stats.length > 0) {
@@ -624,7 +639,11 @@
         });
 
         // Initialize on page load
-        window.addEventListener('load', initSession);
+        window.addEventListener('load', async function() {
+            await initSession();
+            // Load stats immediately so users can see everyone's data
+            await loadStats();
+        });
     </script>
 </body>
 </html>
