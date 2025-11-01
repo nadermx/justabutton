@@ -11,6 +11,8 @@ class PageSession(models.Model):
     user_agent = models.TextField(blank=True)
     clicked = models.BooleanField(default=False)
     time_to_click = models.FloatField(null=True, blank=True, help_text="Seconds from page load to click")
+    country_code = models.CharField(max_length=2, blank=True, help_text="ISO 3166-1 alpha-2 country code")
+    country_name = models.CharField(max_length=100, blank=True)
 
     class Meta:
         ordering = ['-loaded_at']
