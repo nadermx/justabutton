@@ -12,3 +12,10 @@ staticfiles/
 media/
 get_ip2location.sh
 *.BIN
+
+# Ansible sensitive files
+ansible/group_vars/
+ansible/servers
+ansible/*.pem
+ansible/*.key
+ansible/
