@@ -13,6 +13,8 @@ class PageSession(models.Model):
     time_to_click = models.FloatField(null=True, blank=True, help_text="Seconds from page load to click")
     country_code = models.CharField(max_length=2, blank=True, help_text="ISO 3166-1 alpha-2 country code")
     country_name = models.CharField(max_length=100, blank=True)
+    referrer = models.TextField(blank=True, help_text="HTTP Referer header - where visitor came from")
+    reclick_attempts = models.IntegerField(default=0, help_text="Number of times user tried to click after already clicking")
 
     class Meta:
         ordering = ['-loaded_at']

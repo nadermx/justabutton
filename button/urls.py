@@ -7,5 +7,6 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('api/session/', views.create_session, name='create_session'),
     path('api/click/', views.record_click, name='record_click'),
+    path('api/reclick/', views.record_reclick, name='record_reclick'),
     path('api/stats/', views.get_stats, name='get_stats'),
 ]

@@ -333,6 +333,12 @@
                     <div class="stat-value" id="yourTime">0s</div>
                     <div class="stat-label">Your Time</div>
                 </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🔄</div>
+                    <div class="stat-value" id="reclickAttempts">0</div>
+                    <div class="stat-label">Reclick Attempts</div>
+                </div>
             </div>
 
             <div class="charts-section">
@@ -351,6 +357,13 @@
                 <div class="recent-clicks-list">
                     <h3 class="chart-title">🔥 Recent Clicks</h3>
                     <div id="recentClicksList"></div>
+                </div>
+            </div>
+
+            <div class="recent-clicks">
+                <div class="recent-clicks-list">
+                    <h3 class="chart-title">🔗 Top Referring Sites</h3>
+                    <div id="topReferrersList"></div>
                 </div>
             </div>
         </div>
@@ -440,6 +453,7 @@
                 document.getElementById('fastestClick').textContent = stats.fastest_click ? stats.fastest_click.toFixed(2) + 's' : '-';
                 document.getElementById('slowestClick').textContent = stats.slowest_click ? stats.slowest_click.toFixed(2) + 's' : '-';
                 document.getElementById('bounceRate').textContent = stats.bounce_rate.toFixed(1) + '%';
+                document.getElementById('reclickAttempts').textContent = stats.total_reclick_attempts.toLocaleString();
 
                 // Update "Your Time" - show special message if not clicked yet
                 const yourTimeEl = document.getElementById('yourTime');
@@ -465,6 +479,9 @@
 
                 // Display recent clicks
                 displayRecentClicks(stats.recent_clicks);
+
+                // Display top referrers
+                displayTopReferrers(stats.top_referrers);
 
                 // Show stats section
                 document.getElementById('stats').classList.add('show');
@@ -614,6 +631,33 @@
             });
         }
 
+        // Display top referrers
+        function displayTopReferrers(topReferrers) {
+            const container = document.getElementById('topReferrersList');
+            container.innerHTML = '';
+
+            if (!topReferrers || topReferrers.length === 0) {
+                container.innerHTML = '<p class="loading">No referrers yet. Share the link!</p>';
+                return;
+            }
+
+            topReferrers.forEach((referrer, index) => {
+                const item = document.createElement('div');
+                item.className = 'click-item';
+                item.style.animationDelay = `${index * 0.05}s`;
+
+                item.innerHTML = `
+                    <div class="click-country">
+                        <span class="flag">🔗</span>
+                        <span>${referrer.domain}</span>
+                    </div>
+                    <div class="click-time">${referrer.visits} visit${referrer.visits !== 1 ? 's' : ''}</div>
+                `;
+
+                container.appendChild(item);
+            });
+        }
+
         // Fire confetti
         function fireConfetti() {
             const duration = 3000;
@@ -653,9 +697,30 @@
             }
         }
 
+        // Record reclick attempt
+        async function recordReclick() {
+            try {
+                const response = await fetch('/api/reclick/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionId
+                    })
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('Error recording reclick:', error);
+            }
+        }
+
         // Button click handler
         document.getElementById('theButton').addEventListener('click', async function() {
             if (hasClicked) {
+                // Record the reclick attempt
+                await recordReclick();
+
                 // Show a fun message
                 const messages = [
                     '🚫 Nice try! One click per person!',

@@ -2,7 +2,8 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from django.db.models import Avg, Count, Q, Max, Min
+from django.db.models import Avg, Count, Q, Max, Min, Sum
+from urllib.parse import urlparse
 from .models import PageSession, ButtonClick
 import json
 import requests
@@ -48,6 +49,7 @@ def create_session(request):
     """Create a new page session"""
     ip = get_client_ip(request)
     user_agent = request.META.get('HTTP_USER_AGENT', '')
+    referrer = request.META.get('HTTP_REFERER', '')
 
     # Get country info
     country_info = get_country_from_ip(ip)
@@ -55,6 +57,7 @@ def create_session(request):
     session = PageSession.objects.create(
         ip_address=ip,
         user_agent=user_agent,
+        referrer=referrer,
         country_code=country_info['country_code'],
         country_name=country_info['country_name']
     )
@@ -86,6 +89,23 @@ def record_click(request):
         )
 
         return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def record_reclick(request):
+    """Record a reclick attempt"""
+    try:
+        data = json.loads(request.body)
+        session_id = data.get('session_id')
+
+        session = PageSession.objects.get(session_id=session_id)
+        session.reclick_attempts += 1
+        session.save()
+
+        return JsonResponse({'status': 'success', 'reclick_attempts': session.reclick_attempts})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
@@ -134,6 +154,36 @@ def get_stats(request):
         'clicked_at': click.clicked_at.isoformat()
     } for click in recent_clicks]
 
+    # Total reclick attempts
+    total_reclicks = PageSession.objects.aggregate(
+        total=Sum('reclick_attempts')
+    )['total'] or 0
+
+    # Top referring sites
+    referrer_stats = []
+    sessions_with_referrer = PageSession.objects.exclude(referrer='').exclude(referrer__isnull=True)
+
+    # Group by domain
+    referrer_domains = {}
+    for session in sessions_with_referrer:
+        try:
+            parsed = urlparse(session.referrer)
+            domain = parsed.netloc or parsed.path.split('/')[0]
+            if domain:
+                # Clean up domain (remove www.)
+                domain = domain.replace('www.', '')
+                if domain not in referrer_domains:
+                    referrer_domains[domain] = 0
+                referrer_domains[domain] += 1
+        except:
+            pass
+
+    # Sort and get top 10
+    referrer_stats = [
+        {'domain': domain, 'visits': count}
+        for domain, count in sorted(referrer_domains.items(), key=lambda x: x[1], reverse=True)[:10]
+    ]
+
     return JsonResponse({
         'total_sessions': total_sessions,
         'total_clicks': total_clicks,
@@ -144,5 +194,7 @@ def get_stats(request):
         'fastest_click': round(fastest, 2) if fastest else None,
         'slowest_click': round(slowest, 2) if slowest else None,
         'country_stats': list(country_stats),
-        'recent_clicks': recent_list
+        'recent_clicks': recent_list,
+        'total_reclick_attempts': total_reclicks,
+        'top_referrers': referrer_stats
     })
