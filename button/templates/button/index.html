@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Just a Button</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #fff;
+        }
+
+        header {
+            text-align: center;
+            padding: 2rem 1rem 1rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        #theButton {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(145deg, #ff6b6b, #ee5a6f);
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3),
+                        inset 0 -5px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin: 2rem 0;
+        }
+
+        #theButton:hover {
+            transform: scale(1.05);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+        }
+
+        #theButton:active {
+            transform: scale(0.95);
+        }
+
+        #theButton.clicked {
+            animation: pulse 0.5s ease;
+            background: linear-gradient(145deg, #51cf66, #37b24d);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .button-text {
+            position: relative;
+            z-index: 2;
+        }
+
+        #stats {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        #stats.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            max-width: 1400px;
+            width: 100%;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .charts-section {
+            max-width: 1400px;
+            width: 100%;
+            margin-top: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+
+        .chart-container {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .chart-title {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .recent-clicks {
+            max-width: 1400px;
+            width: 100%;
+            margin-top: 2rem;
+        }
+
+        .recent-clicks-list {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .click-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .click-country {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .flag {
+            font-size: 2rem;
+        }
+
+        .click-time {
+            font-weight: bold;
+            color: #ffd43b;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.2rem;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            #theButton {
+                width: 200px;
+                height: 200px;
+                font-size: 1.5rem;
+            }
+
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>JustAButton</h1>
+        <p class="subtitle">One button. Endless curiosity.</p>
+    </header>
+
+    <div class="container">
+        <button id="theButton">
+            <span class="button-text">Click Me!</span>
+        </button>
+
+        <div id="stats">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-value" id="totalClicks">0</div>
+                    <div class="stat-label">Total Clicks</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-value" id="totalSessions">0</div>
+                    <div class="stat-label">Total Visitors</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-value" id="clickRate">0%</div>
+                    <div class="stat-label">Click Rate</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-value" id="avgTime">0s</div>
+                    <div class="stat-label">Avg Time to Click</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🚀</div>
+                    <div class="stat-value" id="fastestClick">-</div>
+                    <div class="stat-label">Fastest Click</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🐌</div>
+                    <div class="stat-value" id="slowestClick">-</div>
+                    <div class="stat-label">Slowest Click</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">💔</div>
+                    <div class="stat-value" id="bounceRate">0%</div>
+                    <div class="stat-label">Bounce Rate</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">⏰</div>
+                    <div class="stat-value" id="yourTime">0s</div>
+                    <div class="stat-label">Your Time</div>
+                </div>
+            </div>
+
+            <div class="charts-section">
+                <div class="chart-container">
+                    <h3 class="chart-title">🌍 Clicks by Country</h3>
+                    <canvas id="countryChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h3 class="chart-title">⏱️ Average Time by Country</h3>
+                    <canvas id="timeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="recent-clicks">
+                <div class="recent-clicks-list">
+                    <h3 class="chart-title">🔥 Recent Clicks</h3>
+                    <div id="recentClicksList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Made with curiosity 🎲 | Track every click, celebrate every visitor</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <script>
+        let sessionId = null;
+        let pageLoadTime = Date.now();
+        let hasClicked = false;
+        let countryChart = null;
+        let timeChart = null;
+
+        // Country code to flag emoji mapping
+        const countryCodeToFlag = (code) => {
+            if (!code || code.length !== 2) return '🌎';
+            const codePoints = code
+                .toUpperCase()
+                .split('')
+                .map(char => 127397 + char.charCodeAt());
+            return String.fromCodePoint(...codePoints);
+        };
+
+        // Initialize session on page load
+        async function initSession() {
+            try {
+                const response = await fetch('/api/session/', {
+                    method: 'POST',
+                });
+                const data = await response.json();
+                sessionId = data.session_id;
+                console.log('Session created:', sessionId);
+            } catch (error) {
+                console.error('Error creating session:', error);
+            }
+        }
+
+        // Record button click
+        async function recordClick(timeElapsed) {
+            try {
+                const response = await fetch('/api/click/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        time_elapsed: timeElapsed
+                    })
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('Error recording click:', error);
+            }
+        }
+
+        // Fetch and display stats
+        async function loadStats(yourTime) {
+            try {
+                const response = await fetch('/api/stats/');
+                const stats = await response.json();
+
+                // Update stat cards
+                document.getElementById('totalClicks').textContent = stats.total_clicks.toLocaleString();
+                document.getElementById('totalSessions').textContent = stats.total_sessions.toLocaleString();
+                document.getElementById('clickRate').textContent = stats.click_through_rate.toFixed(1) + '%';
+                document.getElementById('avgTime').textContent = stats.avg_time_to_click.toFixed(2) + 's';
+                document.getElementById('fastestClick').textContent = stats.fastest_click ? stats.fastest_click.toFixed(2) + 's' : '-';
+                document.getElementById('slowestClick').textContent = stats.slowest_click ? stats.slowest_click.toFixed(2) + 's' : '-';
+                document.getElementById('bounceRate').textContent = stats.bounce_rate.toFixed(1) + '%';
+                document.getElementById('yourTime').textContent = yourTime.toFixed(2) + 's';
+
+                // Create country charts
+                if (stats.country_stats.length > 0) {
+                    createCountryChart(stats.country_stats);
+                    createTimeChart(stats.country_stats);
+                }
+
+                // Display recent clicks
+                displayRecentClicks(stats.recent_clicks);
+
+                // Show stats section
+                document.getElementById('stats').classList.add('show');
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Create country clicks chart
+        function createCountryChart(countryStats) {
+            const ctx = document.getElementById('countryChart').getContext('2d');
+
+            if (countryChart) {
+                countryChart.destroy();
+            }
+
+            const top10 = countryStats.slice(0, 10);
+            const labels = top10.map(c => c.country_name + ' ' + countryCodeToFlag(c.country_code));
+            const data = top10.map(c => c.clicks);
+
+            countryChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Clicks',
+                        data: data,
+                        backgroundColor: 'rgba(255, 107, 107, 0.8)',
+                        borderColor: 'rgba(255, 107, 107, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#fff'
+                            },
+                            grid: {
+                                color: 'rgba(255,255,255,0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#fff'
+                            },
+                            grid: {
+                                color: 'rgba(255,255,255,0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Create average time by country chart
+        function createTimeChart(countryStats) {
+            const ctx = document.getElementById('timeChart').getContext('2d');
+
+            if (timeChart) {
+                timeChart.destroy();
+            }
+
+            const top10 = countryStats.slice(0, 10);
+            const labels = top10.map(c => c.country_name + ' ' + countryCodeToFlag(c.country_code));
+            const data = top10.map(c => c.avg_time);
+
+            timeChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Avg Time (seconds)',
+                        data: data,
+                        backgroundColor: 'rgba(81, 207, 102, 0.2)',
+                        borderColor: 'rgba(81, 207, 102, 1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#fff'
+                            },
+                            grid: {
+                                color: 'rgba(255,255,255,0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#fff'
+                            },
+                            grid: {
+                                color: 'rgba(255,255,255,0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Display recent clicks
+        function displayRecentClicks(recentClicks) {
+            const container = document.getElementById('recentClicksList');
+            container.innerHTML = '';
+
+            if (recentClicks.length === 0) {
+                container.innerHTML = '<p class="loading">No clicks yet. Be the first!</p>';
+                return;
+            }
+
+            recentClicks.forEach((click, index) => {
+                const item = document.createElement('div');
+                item.className = 'click-item';
+                item.style.animationDelay = `${index * 0.05}s`;
+
+                const flag = countryCodeToFlag(click.country_code);
+
+                item.innerHTML = `
+                    <div class="click-country">
+                        <span class="flag">${flag}</span>
+                        <span>${click.country || 'Unknown'}</span>
+                    </div>
+                    <div class="click-time">${click.time_elapsed}s</div>
+                `;
+
+                container.appendChild(item);
+            });
+        }
+
+        // Fire confetti
+        function fireConfetti() {
+            const duration = 3000;
+            const end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 3,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#ff6b6b', '#51cf66', '#ffd43b', '#667eea']
+                });
+                confetti({
+                    particleCount: 3,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#ff6b6b', '#51cf66', '#ffd43b', '#667eea']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+
+        // Button click handler
+        document.getElementById('theButton').addEventListener('click', async function() {
+            if (hasClicked) return;
+
+            hasClicked = true;
+            const timeElapsed = (Date.now() - pageLoadTime) / 1000;
+
+            // Visual feedback
+            this.classList.add('clicked');
+            this.querySelector('.button-text').textContent = '🎉 Clicked!';
+
+            // Fire confetti
+            fireConfetti();
+
+            // Record the click
+            await recordClick(timeElapsed);
+
+            // Load and display stats
+            await loadStats(timeElapsed);
+        });
+
+        // Initialize on page load
+        window.addEventListener('load', initSession);
+    </script>
+</body>
+</html>
