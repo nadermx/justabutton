@@ -136,6 +136,19 @@ def record_click(request):
         session_id = data.get('session_id')
         time_elapsed = data.get('time_elapsed')
 
+        # Validate time_elapsed
+        if time_elapsed is None:
+            return JsonResponse({'status': 'error', 'message': 'time_elapsed is required'}, status=400)
+
+        try:
+            time_elapsed = float(time_elapsed)
+        except (ValueError, TypeError):
+            return JsonResponse({'status': 'error', 'message': 'time_elapsed must be a number'}, status=400)
+
+        # Time must be positive and reasonable (between 0.01s and 999.99s)
+        if time_elapsed < 0.01 or time_elapsed > 999.99:
+            return JsonResponse({'status': 'error', 'message': 'time_elapsed must be between 0.01 and 999.99 seconds'}, status=400)
+
         session = PageSession.objects.get(session_id=session_id)
         session.clicked = True
         session.time_to_click = time_elapsed

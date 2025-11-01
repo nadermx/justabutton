@@ -985,8 +985,29 @@
                 const percentage = (packed >> 1) & 0xFFF;
                 const faster = packed & 1;
 
+                // Validate extracted values
+                const timeInSeconds = time / 100;
+
+                // Time must be between 0.01s and 999.99s
+                if (timeInSeconds < 0.01 || timeInSeconds > 999.99) {
+                    console.warn('Invalid time value:', timeInSeconds);
+                    return null;
+                }
+
+                // Rank must be at least 1
+                if (rank < 1) {
+                    console.warn('Invalid rank value:', rank);
+                    return null;
+                }
+
+                // Percentage should be reasonable (0-999.9%)
+                if (percentage < 0 || percentage > 9999) {
+                    console.warn('Invalid percentage value:', percentage);
+                    return null;
+                }
+
                 // Reconstruct performance object
-                const timeStr = (time / 100).toFixed(2);
+                const timeStr = timeInSeconds.toFixed(2);
                 const rankStr = rank === 1 ? '🥇 #1' : `~#${rank}`;
                 const percStr = percentage > 0
                     ? `${faster ? '🚀' : '🐌'} ${(percentage / 10).toFixed(1)}% ${faster ? 'faster' : 'slower'} than average!`
