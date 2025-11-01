@@ -333,6 +333,31 @@
             color: white;
         }
 
+        .share-btn-facebook {
+            background: #1877F2;
+            color: white;
+        }
+
+        .share-btn-linkedin {
+            background: #0A66C2;
+            color: white;
+        }
+
+        .share-btn-reddit {
+            background: #FF4500;
+            color: white;
+        }
+
+        .share-btn-whatsapp {
+            background: #25D366;
+            color: white;
+        }
+
+        .share-btn-telegram {
+            background: #0088cc;
+            color: white;
+        }
+
         .share-btn-copy {
             background: rgba(255, 255, 255, 0.2);
             color: white;
@@ -424,6 +449,21 @@
                     <div class="share-buttons">
                         <button class="share-btn share-btn-twitter" onclick="shareToTwitter()" title="Share on Twitter">
                             <span>🐦</span>
+                        </button>
+                        <button class="share-btn share-btn-facebook" onclick="shareToFacebook()" title="Share on Facebook">
+                            <span>📘</span>
+                        </button>
+                        <button class="share-btn share-btn-linkedin" onclick="shareToLinkedIn()" title="Share on LinkedIn">
+                            <span>💼</span>
+                        </button>
+                        <button class="share-btn share-btn-reddit" onclick="shareToReddit()" title="Share on Reddit">
+                            <span>🤖</span>
+                        </button>
+                        <button class="share-btn share-btn-whatsapp" onclick="shareToWhatsApp()" title="Share on WhatsApp">
+                            <span>💬</span>
+                        </button>
+                        <button class="share-btn share-btn-telegram" onclick="shareToTelegram()" title="Share on Telegram">
+                            <span>✈️</span>
                         </button>
                         <button class="share-btn share-btn-copy" onclick="copyLink()" title="Copy results to clipboard">
                             <span>🔗</span>
@@ -627,6 +667,39 @@
             const url = 'https://www.justabutton.org';
             const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
             window.open(twitterUrl, '_blank', 'width=550,height=420');
+        }
+
+        function shareToFacebook() {
+            const url = 'https://www.justabutton.org';
+            const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+            window.open(facebookUrl, '_blank', 'width=550,height=420');
+        }
+
+        function shareToLinkedIn() {
+            const url = 'https://www.justabutton.org';
+            const text = `I clicked the button in ${userPerformance.time}s on JustAButton! ${userPerformance.rank} ${userPerformance.comparison}`;
+            const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+            window.open(linkedInUrl, '_blank', 'width=550,height=420');
+        }
+
+        function shareToReddit() {
+            const url = 'https://www.justabutton.org';
+            const title = `I clicked the button in ${userPerformance.time}s! ${userPerformance.rank} ${userPerformance.comparison}`;
+            const redditUrl = `https://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
+            window.open(redditUrl, '_blank', 'width=550,height=420');
+        }
+
+        function shareToWhatsApp() {
+            const text = `I clicked the button in ${userPerformance.time}s on JustAButton! ${userPerformance.rank} ${userPerformance.comparison} Can you beat my time? https://www.justabutton.org`;
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        function shareToTelegram() {
+            const text = `I clicked the button in ${userPerformance.time}s on JustAButton! ${userPerformance.rank} ${userPerformance.comparison} Can you beat my time?`;
+            const url = 'https://www.justabutton.org';
+            const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+            window.open(telegramUrl, '_blank');
         }
 
         function copyLink() {
