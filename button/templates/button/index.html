@@ -965,7 +965,8 @@
             faster = faster & 1;
 
             // Pack into single number: time(16bits) | rank(12bits) | percentage(12bits) | faster(1bit)
-            const packed = (time << 25) | (rank << 13) | (percentage << 1) | faster;
+            // Use >>> 0 to convert to unsigned 32-bit integer (prevents negative numbers)
+            const packed = ((time << 25) | (rank << 13) | (percentage << 1) | faster) >>> 0;
 
             console.log('Encoding performance:', { perf, time, rank, percentage, faster, packed });
 
