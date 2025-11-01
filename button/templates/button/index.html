@@ -20,6 +20,9 @@
     <link rel="icon" type="image/svg+xml" href="{% static 'button/favicon.svg' %}">
     <link rel="apple-touch-icon" href="{% static 'button/favicon.svg' %}">
 
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.justabutton.org/">
@@ -316,11 +319,7 @@
             justify-content: center;
             width: 50px;
             height: 50px;
-            font-size: 1.5rem;
-        }
-
-        .share-btn span:not(:first-child) {
-            display: none;
+            font-size: 1.2rem;
         }
 
         .share-btn:hover {
@@ -448,28 +447,28 @@
                     <p style="opacity: 0.9; font-size: 0.9rem;">Show off your clicking skills</p>
                     <div class="share-buttons">
                         <button class="share-btn share-btn-twitter" onclick="shareToTwitter()" title="Share on Twitter">
-                            <span>🐦</span>
+                            <i class="fa-brands fa-twitter"></i>
                         </button>
                         <button class="share-btn share-btn-facebook" onclick="shareToFacebook()" title="Share on Facebook">
-                            <span>📘</span>
+                            <i class="fa-brands fa-facebook-f"></i>
                         </button>
                         <button class="share-btn share-btn-linkedin" onclick="shareToLinkedIn()" title="Share on LinkedIn">
-                            <span>💼</span>
+                            <i class="fa-brands fa-linkedin-in"></i>
                         </button>
                         <button class="share-btn share-btn-reddit" onclick="shareToReddit()" title="Share on Reddit">
-                            <span>🤖</span>
+                            <i class="fa-brands fa-reddit-alien"></i>
                         </button>
                         <button class="share-btn share-btn-whatsapp" onclick="shareToWhatsApp()" title="Share on WhatsApp">
-                            <span>💬</span>
+                            <i class="fa-brands fa-whatsapp"></i>
                         </button>
                         <button class="share-btn share-btn-telegram" onclick="shareToTelegram()" title="Share on Telegram">
-                            <span>✈️</span>
+                            <i class="fa-brands fa-telegram"></i>
                         </button>
-                        <button class="share-btn share-btn-copy" onclick="copyLink()" title="Copy results to clipboard">
-                            <span>🔗</span>
+                        <button class="share-btn share-btn-copy" onclick="copyLink()" title="Copy shareable link">
+                            <i class="fa-solid fa-link"></i>
                         </button>
                         <button class="share-btn share-btn-native" onclick="shareNative()" id="nativeShareBtn" style="display: none;" title="Share">
-                            <span>📱</span>
+                            <i class="fa-solid fa-share-nodes"></i>
                         </button>
                     </div>
                 </div>
@@ -661,57 +660,84 @@
             }
         }
 
+        // Helper functions for shareable URL
+        function encodePerformance(perf) {
+            const data = JSON.stringify({
+                t: perf.time,
+                r: perf.rank,
+                c: perf.comparison
+            });
+            return btoa(data);
+        }
+
+        function decodePerformance(encoded) {
+            try {
+                const data = JSON.parse(atob(encoded));
+                return {
+                    time: data.t,
+                    rank: data.r,
+                    comparison: data.c
+                };
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function getShareableUrl() {
+            const encoded = encodePerformance(userPerformance);
+            return `https://www.justabutton.org/?challenge=${encoded}`;
+        }
+
         // Share Functions
         function shareToTwitter() {
+            const url = getShareableUrl();
             const text = `I clicked the button in ${userPerformance.time}s on JustAButton! ${userPerformance.rank} ${userPerformance.comparison} Can you beat my time?`;
-            const url = 'https://www.justabutton.org';
             const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
             window.open(twitterUrl, '_blank', 'width=550,height=420');
         }
 
         function shareToFacebook() {
-            const url = 'https://www.justabutton.org';
+            const url = getShareableUrl();
             const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
             window.open(facebookUrl, '_blank', 'width=550,height=420');
         }
 
         function shareToLinkedIn() {
-            const url = 'https://www.justabutton.org';
-            const text = `I clicked the button in ${userPerformance.time}s on JustAButton! ${userPerformance.rank} ${userPerformance.comparison}`;
+            const url = getShareableUrl();
             const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
             window.open(linkedInUrl, '_blank', 'width=550,height=420');
         }
 
         function shareToReddit() {
-            const url = 'https://www.justabutton.org';
+            const url = getShareableUrl();
             const title = `I clicked the button in ${userPerformance.time}s! ${userPerformance.rank} ${userPerformance.comparison}`;
             const redditUrl = `https://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
             window.open(redditUrl, '_blank', 'width=550,height=420');
         }
 
         function shareToWhatsApp() {
-            const text = `I clicked the button in ${userPerformance.time}s on JustAButton! ${userPerformance.rank} ${userPerformance.comparison} Can you beat my time? https://www.justabutton.org`;
-            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+            const url = getShareableUrl();
+            const text = `I clicked the button in ${userPerformance.time}s on JustAButton! ${userPerformance.rank} ${userPerformance.comparison} Can you beat my time?`;
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
             window.open(whatsappUrl, '_blank');
         }
 
         function shareToTelegram() {
+            const url = getShareableUrl();
             const text = `I clicked the button in ${userPerformance.time}s on JustAButton! ${userPerformance.rank} ${userPerformance.comparison} Can you beat my time?`;
-            const url = 'https://www.justabutton.org';
             const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
             window.open(telegramUrl, '_blank');
         }
 
         function copyLink() {
-            const text = `I clicked the button in ${userPerformance.time}s on JustAButton! ${userPerformance.rank} ${userPerformance.comparison} Can you beat my time? https://www.justabutton.org`;
-            navigator.clipboard.writeText(text).then(() => {
+            const url = getShareableUrl();
+            navigator.clipboard.writeText(url).then(() => {
                 const btn = document.querySelector('.share-btn-copy');
-                const icon = btn.querySelector('span:first-child');
-                const originalIcon = icon.textContent;
-                icon.textContent = '✓';
+                const icon = btn.querySelector('i');
+                icon.className = 'fa-solid fa-check';
                 btn.classList.add('copied');
                 setTimeout(() => {
-                    icon.textContent = originalIcon;
+                    icon.className = 'fa-solid fa-link';
                     btn.classList.remove('copied');
                 }, 2000);
             }).catch(err => {
@@ -720,10 +746,11 @@
         }
 
         async function shareNative() {
+            const url = getShareableUrl();
             const shareData = {
                 title: 'JustAButton',
                 text: `I clicked the button in ${userPerformance.time}s! ${userPerformance.rank} ${userPerformance.comparison}`,
-                url: 'https://www.justabutton.org'
+                url: url
             };
 
             try {
@@ -737,6 +764,47 @@
         if (navigator.share) {
             document.getElementById('nativeShareBtn').style.display = 'flex';
         }
+
+        // Check for shared challenge in URL
+        function checkForChallenge() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const challenge = urlParams.get('challenge');
+
+            if (challenge && !hasClicked) {
+                const friendPerf = decodePerformance(challenge);
+                if (friendPerf) {
+                    displayFriendChallenge(friendPerf);
+                }
+            }
+        }
+
+        function displayFriendChallenge(friendPerf) {
+            const challengeHTML = `
+                <div style="background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(238, 90, 111, 0.1));
+                     border: 2px solid rgba(255, 107, 107, 0.5);
+                     border-radius: 15px;
+                     padding: 1.5rem;
+                     margin-bottom: 2rem;
+                     text-align: center;">
+                    <h3 style="color: #ff6b6b; margin-bottom: 1rem;">🏆 Challenge from a Friend!</h3>
+                    <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">
+                        They clicked in <strong style="color: #ffd43b;">${friendPerf.time}s</strong>
+                    </p>
+                    <p style="opacity: 0.9; margin-bottom: 0;">
+                        ${friendPerf.rank} ${friendPerf.comparison}
+                    </p>
+                    <p style="margin-top: 1rem; font-size: 1.1rem; color: #ffd43b;">
+                        Can you beat their time?
+                    </p>
+                </div>
+            `;
+
+            const buttonContainer = document.querySelector('.container');
+            buttonContainer.insertAdjacentHTML('afterbegin', challengeHTML);
+        }
+
+        // Check for challenge on page load
+        checkForChallenge();
 
         // Country code to flag emoji mapping
         const countryCodeToFlag = (code) => {
