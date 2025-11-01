@@ -24,6 +24,28 @@ def get_client_ip(request):
     return ip
 
 
+def sanitize_referrer(referrer):
+    """Sanitize referrer to prevent injection attacks"""
+    if not referrer:
+        return ''
+
+    # Remove template tags, SQL injection attempts, and other malicious patterns
+    dangerous_patterns = ['{%', '{{', '}}', '%}', '<script', 'javascript:', 'data:', 'vbscript:', 'onload=', 'onerror=']
+
+    referrer_lower = referrer.lower()
+    for pattern in dangerous_patterns:
+        if pattern in referrer_lower:
+            import logging
+            logging.warning(f"Blocked malicious referrer: {referrer}")
+            return ''
+
+    # Limit length to prevent DOS
+    if len(referrer) > 500:
+        referrer = referrer[:500]
+
+    return referrer
+
+
 # Initialize IP2Location database
 IP2LOC_DATABASE = None
 def get_ip2location_db():
@@ -102,6 +124,9 @@ def create_session(request):
     except:
         # Fallback to HTTP_REFERER if body parsing fails
         referrer = request.META.get('HTTP_REFERER', '')
+
+    # Sanitize referrer to prevent injection attacks
+    referrer = sanitize_referrer(referrer)
 
     # Debug logging
     import logging
