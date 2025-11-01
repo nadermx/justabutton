@@ -368,6 +368,11 @@
             color: white;
         }
 
+        .share-btn-hackernews {
+            background: #FF6600;
+            color: white;
+        }
+
         .share-btn-whatsapp {
             background: #25D366;
             color: white;
@@ -693,6 +698,9 @@
                         </button>
                         <button class="share-btn share-btn-reddit" onclick="shareToReddit()" title="Share on Reddit">
                             <i class="fa-brands fa-reddit-alien"></i>
+                        </button>
+                        <button class="share-btn share-btn-hackernews" onclick="shareToHackerNews()" title="Share on Hacker News">
+                            <i class="fa-brands fa-hacker-news"></i>
                         </button>
                         <button class="share-btn share-btn-whatsapp" onclick="shareToWhatsApp()" title="Share on WhatsApp">
                             <i class="fa-brands fa-whatsapp"></i>
@@ -1031,6 +1039,13 @@
             const title = `I clicked the button in ${userPerformance.time}s! ${userPerformance.rank} ${userPerformance.comparison}`;
             const redditUrl = `https://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
             window.open(redditUrl, '_blank', 'width=550,height=420');
+        }
+
+        function shareToHackerNews() {
+            const url = getShareableUrl();
+            const title = `I clicked the button in ${userPerformance.time}s! ${userPerformance.rank} ${userPerformance.comparison}`;
+            const hnUrl = `https://news.ycombinator.com/submitlink?u=${encodeURIComponent(url)}&t=${encodeURIComponent(title)}`;
+            window.open(hnUrl, '_blank', 'width=550,height=420');
         }
 
         function shareToWhatsApp() {
