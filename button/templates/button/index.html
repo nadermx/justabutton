@@ -1178,12 +1178,13 @@
                     },
                     body: JSON.stringify({
                         browser_name: browserInfo.browserName,
-                        browser_version: browserInfo.browserVersion
+                        browser_version: browserInfo.browserVersion,
+                        referrer: document.referrer || ''
                     })
                 });
                 const data = await response.json();
                 sessionId = data.session_id;
-                console.log('Session created:', sessionId);
+                console.log('Session created:', sessionId, 'Referrer:', document.referrer);
             } catch (error) {
                 console.error('Error creating session:', error);
             }

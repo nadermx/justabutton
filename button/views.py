@@ -88,21 +88,24 @@ def create_session(request):
     """Create a new page session"""
     ip = get_client_ip(request)
     user_agent = request.META.get('HTTP_USER_AGENT', '')
-    referrer = request.META.get('HTTP_REFERER', '')
 
-    # Debug logging
-    import logging
-    logging.info(f"New session - IP: {ip}, X-Forwarded-For: {request.META.get('HTTP_X_FORWARDED_FOR', 'None')}")
-
-    # Get browser info from request body
+    # Get browser info and referrer from request body
     browser_name = ''
     browser_version = ''
+    referrer = ''
     try:
         data = json.loads(request.body) if request.body else {}
         browser_name = data.get('browser_name', '')
         browser_version = data.get('browser_version', '')
+        # Prioritize client-side referrer over HTTP_REFERER header
+        referrer = data.get('referrer', '') or request.META.get('HTTP_REFERER', '')
     except:
-        pass
+        # Fallback to HTTP_REFERER if body parsing fails
+        referrer = request.META.get('HTTP_REFERER', '')
+
+    # Debug logging
+    import logging
+    logging.info(f"New session - IP: {ip}, Referrer: {referrer}, User-Agent: {user_agent[:50]}")
 
     # Get country info
     country_info = get_country_from_ip(ip)
