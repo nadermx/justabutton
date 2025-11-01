@@ -194,6 +194,7 @@
             font-size: 2.5rem;
             font-weight: bold;
             margin: 0.5rem 0;
+            word-break: break-word;
         }
 
         .stat-label {
@@ -201,6 +202,7 @@
             opacity: 0.9;
             text-transform: uppercase;
             letter-spacing: 1px;
+            word-break: break-word;
         }
 
         .charts-section {
@@ -302,6 +304,8 @@
         .share-section {
             margin-top: 1.5rem;
             text-align: center;
+            max-width: 100%;
+            overflow: hidden;
         }
 
         .share-buttons {
@@ -310,6 +314,18 @@
             justify-content: center;
             flex-wrap: wrap;
             margin-top: 1rem;
+            max-width: 100%;
+        }
+
+        /* Ensure Bootstrap rows don't cause overflow */
+        .row {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .row > * {
+            padding-left: calc(var(--bs-gutter-x) * 0.5);
+            padding-right: calc(var(--bs-gutter-x) * 0.5);
         }
 
         .share-btn {
@@ -456,6 +472,61 @@
             }
         }
 
+        @media (max-width: 465px) {
+            h1 {
+                font-size: 1.9rem;
+            }
+
+            .subtitle {
+                font-size: 0.9rem;
+            }
+
+            #theButton {
+                width: 140px;
+                height: 140px;
+                font-size: 1.05rem;
+            }
+
+            .stat-value {
+                font-size: 1.4rem;
+            }
+
+            .stat-label {
+                font-size: 0.8rem;
+            }
+
+            .stat-card {
+                padding: 0.6rem;
+            }
+
+            .share-section h3 {
+                font-size: 1.05rem;
+            }
+
+            .share-section p {
+                font-size: 0.75rem;
+            }
+
+            .share-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 0.95rem;
+            }
+
+            .share-buttons {
+                gap: 0.55rem;
+            }
+
+            .container {
+                padding-left: 0.875rem;
+                padding-right: 0.875rem;
+            }
+
+            header {
+                padding: 1.75rem 0.75rem 0.75rem;
+            }
+        }
+
         @media (max-width: 380px) {
             h1 {
                 font-size: 1.7rem;
@@ -475,6 +546,10 @@
                 font-size: 1rem;
             }
 
+            .share-section p {
+                font-size: 0.7rem;
+            }
+
             .share-btn {
                 width: 38px;
                 height: 38px;
@@ -490,6 +565,10 @@
                 font-size: 1.3rem;
             }
 
+            .stat-label {
+                font-size: 0.75rem;
+            }
+
             .stat-card {
                 padding: 0.5rem;
             }
@@ -501,6 +580,62 @@
 
             header {
                 padding: 1.5rem 0.5rem 0.5rem;
+            }
+        }
+
+        @media (max-width: 320px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .subtitle {
+                font-size: 0.8rem;
+            }
+
+            #theButton {
+                width: 120px;
+                height: 120px;
+                font-size: 0.95rem;
+            }
+
+            .stat-value {
+                font-size: 1.2rem;
+            }
+
+            .stat-label {
+                font-size: 0.7rem;
+                letter-spacing: 0.5px;
+            }
+
+            .stat-card {
+                padding: 0.4rem;
+            }
+
+            .share-section h3 {
+                font-size: 0.95rem;
+            }
+
+            .share-section p {
+                font-size: 0.65rem;
+            }
+
+            .share-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 0.85rem;
+            }
+
+            .share-buttons {
+                gap: 0.4rem;
+            }
+
+            .container {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+
+            header {
+                padding: 1.25rem 0.5rem 0.5rem;
             }
         }
     </style>
@@ -784,12 +919,21 @@
 
         function encodePerformance(perf) {
             // Extract time in centiseconds (e.g., "0.94" -> 94)
-            const time = Math.round(parseFloat(perf.time) * 100);
+            let time = Math.round(parseFloat(perf.time) * 100);
+            if (isNaN(time) || !isFinite(time) || time < 0) time = 0;
 
             // Extract rank number (e.g., "🥇 #1" -> 1, "~#45" -> 45)
             let rank = 0;
-            const rankMatch = perf.rank.match(/#?(\d+)/);
-            if (rankMatch) rank = parseInt(rankMatch[1]);
+            if (perf.rank) {
+                const rankMatch = perf.rank.match(/#?(\d+)/);
+                if (rankMatch) {
+                    rank = parseInt(rankMatch[1]);
+                    // Validate rank is a finite number
+                    if (isNaN(rank) || !isFinite(rank) || rank < 0) rank = 0;
+                    // Cap rank at max value (4095)
+                    if (rank > 4095) rank = 4095;
+                }
+            }
 
             // Extract percentage and direction (e.g., "🚀 38.6% faster" -> 386 and 1 for faster)
             let percentage = 0;
@@ -798,12 +942,21 @@
                 const percMatch = perf.comparison.match(/([\d.]+)%/);
                 if (percMatch) {
                     percentage = Math.round(parseFloat(percMatch[1]) * 10);
+                    // Validate percentage
+                    if (isNaN(percentage) || !isFinite(percentage) || percentage < 0) percentage = 0;
+                    // Cap percentage at max value (4095)
+                    if (percentage > 4095) percentage = 4095;
                     faster = perf.comparison.includes('faster') ? 1 : 0;
                 }
             }
 
+            // Ensure all values are safe before packing
+            time = time & 0xFFFF;
+            rank = rank & 0xFFF;
+            percentage = percentage & 0xFFF;
+            faster = faster & 1;
+
             // Pack into single number: time(16bits) | rank(12bits) | percentage(12bits) | faster(1bit)
-            // Max values: time=65535 (655.35s), rank=4095, percentage=4095 (409.5%)
             const packed = (time << 25) | (rank << 13) | (percentage << 1) | faster;
 
             console.log('Encoding performance:', { perf, time, rank, percentage, faster, packed });
