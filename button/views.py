@@ -203,6 +203,24 @@ def get_stats(request):
         count=Count('session_id')
     ).order_by('-count')[:10]
 
+    # New statistics for symmetry
+    # 1. Sessions today
+    today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    sessions_today = PageSession.objects.filter(loaded_at__gte=today_start).count()
+
+    # 2. Clicks today
+    clicks_today = ButtonClick.objects.filter(clicked_at__gte=today_start).count()
+
+    # 3. Most active country (country with most clicks)
+    most_active_country = ''
+    if country_stats:
+        most_active_country = country_stats[0]['country_name']
+
+    # 4. Most popular browser
+    most_popular_browser = ''
+    if browser_stats:
+        most_popular_browser = browser_stats[0]['browser_name']
+
     return JsonResponse({
         'total_sessions': total_sessions,
         'total_clicks': total_clicks,
@@ -216,5 +234,9 @@ def get_stats(request):
         'recent_clicks': recent_list,
         'total_reclick_attempts': total_reclicks,
         'top_referrers': referrer_stats,
-        'browser_stats': list(browser_stats)
+        'browser_stats': list(browser_stats),
+        'sessions_today': sessions_today,
+        'clicks_today': clicks_today,
+        'most_active_country': most_active_country,
+        'most_popular_browser': most_popular_browser
     })

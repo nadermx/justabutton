@@ -359,6 +359,30 @@
                     <div class="stat-value" id="reclickAttempts">0</div>
                     <div class="stat-label">Reclick Attempts</div>
                 </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-value" id="sessionsToday">0</div>
+                    <div class="stat-label">Visitors Today</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-value" id="clicksToday">0</div>
+                    <div class="stat-label">Clicks Today</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🌟</div>
+                    <div class="stat-value" id="mostActiveCountry">-</div>
+                    <div class="stat-label">Most Active Country</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🌐</div>
+                    <div class="stat-value" id="mostPopularBrowser">-</div>
+                    <div class="stat-label">Most Popular Browser</div>
+                </div>
             </div>
 
             <div class="charts-section">
@@ -520,6 +544,12 @@
                 document.getElementById('slowestClick').textContent = stats.slowest_click ? stats.slowest_click.toFixed(2) + 's' : '-';
                 document.getElementById('bounceRate').textContent = stats.bounce_rate.toFixed(1) + '%';
                 document.getElementById('reclickAttempts').textContent = stats.total_reclick_attempts.toLocaleString();
+
+                // Update new stat cards
+                document.getElementById('sessionsToday').textContent = stats.sessions_today.toLocaleString();
+                document.getElementById('clicksToday').textContent = stats.clicks_today.toLocaleString();
+                document.getElementById('mostActiveCountry').textContent = stats.most_active_country || '-';
+                document.getElementById('mostPopularBrowser').textContent = stats.most_popular_browser || '-';
 
                 // Update personal stats section
                 if (yourTime !== null) {
