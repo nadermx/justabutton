@@ -83,6 +83,11 @@
             background: linear-gradient(145deg, #51cf66, #37b24d);
         }
 
+        #theButton.clicked:hover {
+            transform: scale(1);
+            cursor: not-allowed;
+        }
+
         #theButton:disabled {
             opacity: 0.9;
         }
@@ -900,7 +905,8 @@
                 button.classList.add('clicked');
                 button.style.cursor = 'not-allowed';
                 button.querySelector('.button-text').innerHTML = '✅ Already Clicked!<br><small style="font-size: 1rem; opacity: 0.8;">You\'re in the club!</small>';
-                button.disabled = true;
+                // Don't disable the button so click events can still fire for reclick tracking
+                // button.disabled = true;
             }
         }
 
