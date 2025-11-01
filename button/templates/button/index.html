@@ -440,12 +440,14 @@
         const STORAGE_KEY = 'justabutton_clicked';
         const clickData = localStorage.getItem(STORAGE_KEY);
         let previousClickTime = null;
+        let originalSessionId = null;
 
         if (clickData) {
             try {
                 const data = JSON.parse(clickData);
                 hasClicked = true;
                 previousClickTime = data.time;
+                originalSessionId = data.session_id;
             } catch (e) {
                 console.error('Error parsing click data:', e);
             }
@@ -874,13 +876,15 @@
         // Record reclick attempt
         async function recordReclick() {
             try {
+                // Use the original session ID from localStorage if available
+                const reclickSessionId = originalSessionId || sessionId;
                 const response = await fetch('/api/reclick/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        session_id: sessionId
+                        session_id: reclickSessionId
                     })
                 });
                 return await response.json();
@@ -918,7 +922,8 @@
             // Save to localStorage - this is permanent!
             localStorage.setItem(STORAGE_KEY, JSON.stringify({
                 time: timeElapsed,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                session_id: sessionId
             }));
 
             // Visual feedback
