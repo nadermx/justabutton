@@ -55,6 +55,8 @@
             display: flex;
             flex-direction: column;
             color: #fff;
+            overflow-x: hidden;
+            max-width: 100vw;
         }
 
         header {
@@ -173,6 +175,9 @@
             padding: 1.5rem;
             border: 1px solid rgba(255,255,255,0.2);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            max-width: 100%;
         }
 
         .stat-card:hover {
@@ -483,6 +488,19 @@
 
             .stat-value {
                 font-size: 1.3rem;
+            }
+
+            .stat-card {
+                padding: 0.5rem;
+            }
+
+            .container {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+
+            header {
+                padding: 1.5rem 0.5rem 0.5rem;
             }
         }
     </style>
@@ -1089,7 +1107,11 @@
                         const totalClickers = stats.clicked_sessions;
                         let estimatedRank = 'Top ';
 
-                        if (yourTime === stats.fastest_click) {
+                        if (yourTime === stats.fastest_click && yourTime === stats.slowest_click) {
+                            // Only one clicker so far
+                            estimatedRank = '🥇 #1';
+                            rankInfo = 'Only click!';
+                        } else if (yourTime === stats.fastest_click) {
                             estimatedRank = '🥇 #1';
                             rankInfo = 'Fastest click!';
                         } else if (yourTime === stats.slowest_click) {
@@ -1098,12 +1120,18 @@
                         } else {
                             // Estimate position based on time range
                             const range = stats.slowest_click - stats.fastest_click;
-                            const position = (yourTime - stats.fastest_click) / range;
-                            const estimatedPos = Math.ceil(position * totalClickers);
-                            estimatedRank = `~#${estimatedPos}`;
+                            if (range > 0) {
+                                const position = (yourTime - stats.fastest_click) / range;
+                                const estimatedPos = Math.ceil(position * totalClickers);
+                                estimatedRank = `~#${estimatedPos}`;
 
-                            const percentile = ((totalClickers - estimatedPos) / totalClickers * 100).toFixed(0);
-                            rankInfo = `Top ${percentile}% of clickers`;
+                                const percentile = ((totalClickers - estimatedPos) / totalClickers * 100).toFixed(0);
+                                rankInfo = `Top ${percentile}% of clickers`;
+                            } else {
+                                // Shouldn't happen but handle edge case
+                                estimatedRank = `~#${Math.ceil(totalClickers / 2)}`;
+                                rankInfo = 'Around middle';
+                            }
                         }
 
                         document.getElementById('yourRank').textContent = estimatedRank;
