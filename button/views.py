@@ -227,6 +227,9 @@ def get_stats(request):
             if domain:
                 # Clean up domain (remove www.)
                 domain = domain.replace('www.', '')
+                # Skip self-referrers
+                if domain == 'justabutton.org':
+                    continue
                 if domain not in referrer_domains:
                     referrer_domains[domain] = 0
                 referrer_domains[domain] += 1
