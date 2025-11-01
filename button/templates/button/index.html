@@ -660,23 +660,73 @@
             }
         }
 
-        // Helper functions for shareable URL
+        // Helper functions for shareable URL - compact encoding
+        const base62chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+
+        function toBase62(num) {
+            if (num === 0) return '0';
+            let result = '';
+            while (num > 0) {
+                result = base62chars[num % 62] + result;
+                num = Math.floor(num / 62);
+            }
+            return result;
+        }
+
+        function fromBase62(str) {
+            let result = 0;
+            for (let i = 0; i < str.length; i++) {
+                result = result * 62 + base62chars.indexOf(str[i]);
+            }
+            return result;
+        }
+
         function encodePerformance(perf) {
-            const data = JSON.stringify({
-                t: perf.time,
-                r: perf.rank,
-                c: perf.comparison
-            });
-            return btoa(data);
+            // Extract time in centiseconds (e.g., "0.94" -> 94)
+            const time = Math.round(parseFloat(perf.time) * 100);
+
+            // Extract rank number (e.g., "🥇 #1" -> 1, "~#45" -> 45)
+            let rank = 0;
+            const rankMatch = perf.rank.match(/#?(\d+)/);
+            if (rankMatch) rank = parseInt(rankMatch[1]);
+
+            // Extract percentage and direction (e.g., "🚀 38.6% faster" -> 386 and 1 for faster)
+            let percentage = 0;
+            let faster = 0;
+            if (perf.comparison) {
+                const percMatch = perf.comparison.match(/([\d.]+)%/);
+                if (percMatch) {
+                    percentage = Math.round(parseFloat(percMatch[1]) * 10);
+                    faster = perf.comparison.includes('faster') ? 1 : 0;
+                }
+            }
+
+            // Pack into single number: time(16bits) | rank(12bits) | percentage(12bits) | faster(1bit)
+            // Max values: time=65535 (655.35s), rank=4095, percentage=4095 (409.5%)
+            const packed = (time << 25) | (rank << 13) | (percentage << 1) | faster;
+            return toBase62(packed);
         }
 
         function decodePerformance(encoded) {
             try {
-                const data = JSON.parse(atob(encoded));
+                const packed = fromBase62(encoded);
+
+                const time = (packed >> 25) & 0xFFFF;
+                const rank = (packed >> 13) & 0xFFF;
+                const percentage = (packed >> 1) & 0xFFF;
+                const faster = packed & 1;
+
+                // Reconstruct performance object
+                const timeStr = (time / 100).toFixed(2);
+                const rankStr = rank === 1 ? '🥇 #1' : `~#${rank}`;
+                const percStr = percentage > 0
+                    ? `${faster ? '🚀' : '🐌'} ${(percentage / 10).toFixed(1)}% ${faster ? 'faster' : 'slower'} than average!`
+                    : '';
+
                 return {
-                    time: data.t,
-                    rank: data.r,
-                    comparison: data.c
+                    time: timeStr,
+                    rank: rankStr,
+                    comparison: percStr
                 };
             } catch (e) {
                 return null;
@@ -685,7 +735,7 @@
 
         function getShareableUrl() {
             const encoded = encodePerformance(userPerformance);
-            return `https://www.justabutton.org/?challenge=${encoded}`;
+            return `https://www.justabutton.org/?c=${encoded}`;
         }
 
         // Share Functions
@@ -768,7 +818,7 @@
         // Check for shared challenge in URL
         function checkForChallenge() {
             const urlParams = new URLSearchParams(window.location.search);
-            const challenge = urlParams.get('challenge');
+            const challenge = urlParams.get('c');
 
             if (challenge && !hasClicked) {
                 const friendPerf = decodePerformance(challenge);
