@@ -9,6 +9,9 @@ import json
 import requests
 from datetime import timedelta
 from django.utils import timezone
+import IP2Location
+import os
+from django.conf import settings
 
 
 def get_client_ip(request):
@@ -21,10 +24,36 @@ def get_client_ip(request):
     return ip
 
 
+# Initialize IP2Location database
+IP2LOC_DATABASE = None
+def get_ip2location_db():
+    """Get or initialize IP2Location database"""
+    global IP2LOC_DATABASE
+    if IP2LOC_DATABASE is None:
+        # Look for BIN file in the project root
+        db_path = os.path.join(settings.BASE_DIR, 'IP2LOCATION-LITE-DB11.BIN')
+        if os.path.exists(db_path):
+            IP2LOC_DATABASE = IP2Location.IP2Location(db_path)
+    return IP2LOC_DATABASE
+
+
 def get_country_from_ip(ip):
-    """Get country information from IP address"""
+    """Get country information from IP address using local IP2Location database"""
     try:
-        # Using ip-api.com (free, no key needed)
+        # Try local IP2Location database first
+        db = get_ip2location_db()
+        if db:
+            rec = db.get_all(ip)
+            if rec and rec.country_short != '-':
+                return {
+                    'country_code': rec.country_short,
+                    'country_name': rec.country_long
+                }
+    except Exception as e:
+        print(f"IP2Location error: {e}")
+
+    # Fallback to ip-api.com if local database fails
+    try:
         response = requests.get(f'http://ip-api.com/json/{ip}', timeout=2)
         if response.status_code == 200:
             data = response.json()
@@ -35,6 +64,7 @@ def get_country_from_ip(ip):
                 }
     except:
         pass
+
     return {'country_code': '', 'country_name': ''}
 
 
