@@ -392,14 +392,97 @@
                 font-size: 1.8rem;
             }
 
-            .share-buttons {
-                flex-direction: column;
-                align-items: center;
+            .share-section h3 {
+                font-size: 1.3rem;
+            }
+
+            .share-section p {
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 550px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .subtitle {
+                font-size: 0.9rem;
+            }
+
+            #theButton {
+                width: 150px;
+                height: 150px;
+                font-size: 1.1rem;
+            }
+
+            .stat-card {
+                padding: 0.75rem;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .stat-label {
+                font-size: 0.85rem;
+            }
+
+            .share-section {
+                padding: 0 0.5rem;
+            }
+
+            .share-section h3 {
+                font-size: 1.1rem;
+            }
+
+            .share-section p {
+                font-size: 0.8rem;
             }
 
             .share-btn {
-                width: 200px;
-                justify-content: center;
+                width: 42px;
+                height: 42px;
+                font-size: 1rem;
+            }
+
+            .share-buttons {
+                gap: 0.6rem;
+            }
+        }
+
+        @media (max-width: 380px) {
+            h1 {
+                font-size: 1.7rem;
+            }
+
+            .subtitle {
+                font-size: 0.85rem;
+            }
+
+            #theButton {
+                width: 130px;
+                height: 130px;
+                font-size: 1rem;
+            }
+
+            .share-section h3 {
+                font-size: 1rem;
+            }
+
+            .share-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 0.9rem;
+            }
+
+            .share-buttons {
+                gap: 0.5rem;
+                max-width: 100%;
+            }
+
+            .stat-value {
+                font-size: 1.3rem;
             }
         }
     </style>
@@ -742,6 +825,12 @@
         }
 
         function getShareableUrl() {
+            // Check if userPerformance has been populated
+            if (!userPerformance.time || userPerformance.time === '0' || parseFloat(userPerformance.time) === 0) {
+                console.warn('User performance not yet loaded');
+                return 'https://www.justabutton.org';
+            }
+
             const encoded = encodePerformance(userPerformance);
             return `https://www.justabutton.org/?c=${encoded}`;
         }
@@ -971,6 +1060,7 @@
                 document.getElementById('mostPopularBrowser').textContent = stats.most_popular_browser || '-';
 
                 // Update personal stats section
+                console.log('loadStats yourTime:', yourTime);
                 if (yourTime !== null) {
                     // Show personal stats section
                     document.getElementById('personalStats').style.display = 'block';
@@ -1023,11 +1113,13 @@
                         userPerformance.time = yourTime.toFixed(2);
                         userPerformance.rank = estimatedRank;
                         userPerformance.comparison = comparison;
+                        console.log('Updated userPerformance (with rank):', userPerformance);
                     } else {
                         // Update userPerformance even without rank
                         userPerformance.time = yourTime.toFixed(2);
                         userPerformance.rank = '';
                         userPerformance.comparison = comparison;
+                        console.log('Updated userPerformance (no rank):', userPerformance);
                     }
 
                     document.getElementById('yourComparison').textContent = comparison;
