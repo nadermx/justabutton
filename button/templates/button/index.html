@@ -1102,6 +1102,9 @@
             document.getElementById('nativeShareBtn').style.display = 'flex';
         }
 
+        // Store friend challenge data globally
+        let friendChallengeData = null;
+
         // Check for shared challenge in URL
         function checkForChallenge() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -1109,11 +1112,18 @@
 
             console.log('Checking for challenge:', { challenge, hasClicked, urlSearch: window.location.search });
 
-            if (challenge && !hasClicked) {
-                const friendPerf = decodePerformance(challenge);
-                console.log('Friend performance decoded:', friendPerf);
-                if (friendPerf) {
-                    displayFriendChallenge(friendPerf);
+            if (challenge) {
+                friendChallengeData = decodePerformance(challenge);
+                console.log('Friend performance decoded:', friendChallengeData);
+
+                if (friendChallengeData) {
+                    if (hasClicked) {
+                        // They've already clicked - show comparison with their previous time
+                        displayFriendChallengeWithComparison(friendChallengeData, previousClickTime);
+                    } else {
+                        // They haven't clicked yet - show the challenge
+                        displayFriendChallenge(friendChallengeData);
+                    }
                 }
             }
         }
@@ -1137,6 +1147,58 @@
                     </p>
                     <p style="margin-top: 1rem; font-size: 1.1rem; color: #ffd43b;">
                         Can you beat their time?
+                    </p>
+                </div>
+            `;
+
+            const buttonContainer = document.querySelector('.container');
+            console.log('Button container:', buttonContainer);
+            buttonContainer.insertAdjacentHTML('afterbegin', challengeHTML);
+        }
+
+        function displayFriendChallengeWithComparison(friendPerf, yourTime) {
+            console.log('Displaying friend challenge with comparison:', { friendPerf, yourTime });
+
+            const friendTime = parseFloat(friendPerf.time);
+            const yourTimeParsed = parseFloat(yourTime);
+            const diff = Math.abs(yourTimeParsed - friendTime);
+
+            let resultText, resultIcon, resultColor;
+            if (yourTimeParsed < friendTime) {
+                resultText = `You beat your friend by ${diff.toFixed(2)}s!`;
+                resultIcon = '🎉';
+                resultColor = '#51cf66';
+            } else if (yourTimeParsed > friendTime) {
+                resultText = `Your friend was ${diff.toFixed(2)}s faster!`;
+                resultIcon = '😅';
+                resultColor = '#ff6b6b';
+            } else {
+                resultText = `You tied with your friend!`;
+                resultIcon = '🤝';
+                resultColor = '#ffd43b';
+            }
+
+            const challengeHTML = `
+                <div id="friendChallenge" style="background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(238, 90, 111, 0.1));
+                     border: 2px solid rgba(255, 107, 107, 0.5);
+                     border-radius: 15px;
+                     padding: 1.5rem;
+                     margin-bottom: 2rem;
+                     text-align: center;">
+                    <h3 style="color: #ff6b6b; margin-bottom: 1rem;">⚔️ Friend Challenge Result</h3>
+                    <div style="display: flex; justify-content: space-around; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 0.25rem;">Your Time</p>
+                            <p style="font-size: 1.5rem; font-weight: bold; color: #ffd43b; margin: 0;">${yourTimeParsed.toFixed(2)}s</p>
+                        </div>
+                        <div style="font-size: 2rem; display: flex; align-items: center;">vs</div>
+                        <div>
+                            <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 0.25rem;">Friend's Time</p>
+                            <p style="font-size: 1.5rem; font-weight: bold; color: #ffd43b; margin: 0;">${friendTime.toFixed(2)}s</p>
+                        </div>
+                    </div>
+                    <p style="font-size: 1.3rem; font-weight: bold; color: ${resultColor}; margin-top: 1rem;">
+                        ${resultIcon} ${resultText}
                     </p>
                 </div>
             `;
@@ -1673,6 +1735,13 @@
 
             // Load and display stats
             await loadStats(timeElapsed);
+
+            // Show friend comparison if there was a challenge
+            if (friendChallengeData) {
+                setTimeout(() => {
+                    displayFriendChallengeWithComparison(friendChallengeData, timeElapsed);
+                }, 500);
+            }
 
             // Update button text after confetti
             setTimeout(() => {
