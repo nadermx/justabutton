@@ -704,6 +704,9 @@
             // Pack into single number: time(16bits) | rank(12bits) | percentage(12bits) | faster(1bit)
             // Max values: time=65535 (655.35s), rank=4095, percentage=4095 (409.5%)
             const packed = (time << 25) | (rank << 13) | (percentage << 1) | faster;
+
+            console.log('Encoding performance:', { perf, time, rank, percentage, faster, packed });
+
             return toBase62(packed);
         }
 
@@ -723,12 +726,17 @@
                     ? `${faster ? '🚀' : '🐌'} ${(percentage / 10).toFixed(1)}% ${faster ? 'faster' : 'slower'} than average!`
                     : '';
 
-                return {
+                const result = {
                     time: timeStr,
                     rank: rankStr,
                     comparison: percStr
                 };
+
+                console.log('Decoded performance:', { encoded, packed, time, rank, percentage, faster, result });
+
+                return result;
             } catch (e) {
+                console.error('Error decoding performance:', e);
                 return null;
             }
         }
@@ -820,8 +828,11 @@
             const urlParams = new URLSearchParams(window.location.search);
             const challenge = urlParams.get('c');
 
+            console.log('Checking for challenge:', { challenge, hasClicked, urlSearch: window.location.search });
+
             if (challenge && !hasClicked) {
                 const friendPerf = decodePerformance(challenge);
+                console.log('Friend performance decoded:', friendPerf);
                 if (friendPerf) {
                     displayFriendChallenge(friendPerf);
                 }
@@ -829,6 +840,8 @@
         }
 
         function displayFriendChallenge(friendPerf) {
+            console.log('Displaying friend challenge:', friendPerf);
+
             const challengeHTML = `
                 <div style="background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(238, 90, 111, 0.1));
                      border: 2px solid rgba(255, 107, 107, 0.5);
@@ -850,6 +863,7 @@
             `;
 
             const buttonContainer = document.querySelector('.container');
+            console.log('Button container:', buttonContainer);
             buttonContainer.insertAdjacentHTML('afterbegin', challengeHTML);
         }
 
