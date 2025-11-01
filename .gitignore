@@ -1,0 +1,14 @@
+/venv/
+*.pyc
+__pycache__/
+db.sqlite3
+*.log
+.DS_Store
+.idea/
+*.swp
+*.swo
+.env
+staticfiles/
+media/
+get_ip2location.sh
+*.BIN
