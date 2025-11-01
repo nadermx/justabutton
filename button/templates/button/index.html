@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Just a Button</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -41,7 +42,7 @@
             font-weight: 300;
         }
 
-        .container {
+        .main-container {
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -113,11 +114,6 @@
         }
 
         .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            max-width: 1400px;
-            width: 100%;
             margin-top: 2rem;
         }
 
@@ -154,12 +150,7 @@
         }
 
         .charts-section {
-            max-width: 1400px;
-            width: 100%;
             margin-top: 2rem;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 2rem;
         }
 
         .chart-container {
@@ -178,8 +169,6 @@
         }
 
         .recent-clicks {
-            max-width: 1400px;
-            width: 100%;
             margin-top: 2rem;
         }
 
@@ -262,13 +251,17 @@
             }
 
             #theButton {
-                width: 200px;
-                height: 200px;
-                font-size: 1.5rem;
+                width: 180px;
+                height: 180px;
+                font-size: 1.3rem;
             }
 
-            .charts-section {
-                grid-template-columns: 1fr;
+            .stat-card {
+                padding: 1rem;
+            }
+
+            .stat-value {
+                font-size: 1.8rem;
             }
         }
     </style>
@@ -279,142 +272,180 @@
         <p class="subtitle">One button. One chance. Forever.</p>
     </header>
 
-    <div class="container">
+    <div class="main-container">
         <button id="theButton">
             <span class="button-text">Click Me!</span>
         </button>
 
         <div id="stats">
             <!-- Personal Stats Section (only shown after clicking) -->
-            <div id="personalStats" style="display: none;">
-                <h2 style="text-align: center; font-size: 2rem; margin-bottom: 1.5rem; color: #ffd43b;">
+            <div id="personalStats" style="display: none;" class="container">
+                <h2 class="text-center mb-4" style="font-size: 2rem; color: #ffd43b;">
                     ⭐ Your Performance ⭐
                 </h2>
-                <div class="stats-grid" style="max-width: 800px; margin: 0 auto 3rem;">
-                    <div class="stat-card" id="yourTimeCard" style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 193, 7, 0.2)); border: 2px solid rgba(255, 215, 0, 0.5);">
-                        <div class="stat-icon">⏰</div>
-                        <div class="stat-value" id="yourTimeValue">0s</div>
-                        <div class="stat-label">Your Time</div>
-                        <div id="yourComparison" style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.9;"></div>
+                <div class="row g-3 justify-content-center mb-5">
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <div class="stat-card" id="yourTimeCard" style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 193, 7, 0.2)); border: 2px solid rgba(255, 215, 0, 0.5);">
+                            <div class="stat-icon">⏰</div>
+                            <div class="stat-value" id="yourTimeValue">0s</div>
+                            <div class="stat-label">Your Time</div>
+                            <div id="yourComparison" style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.9;"></div>
+                        </div>
                     </div>
 
-                    <div class="stat-card" id="yourRankCard" style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 193, 7, 0.2)); border: 2px solid rgba(255, 215, 0, 0.5);">
-                        <div class="stat-icon">🏆</div>
-                        <div class="stat-value" id="yourRank">-</div>
-                        <div class="stat-label">Your Ranking</div>
-                        <div id="rankComparison" style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.9;"></div>
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <div class="stat-card" id="yourRankCard" style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 193, 7, 0.2)); border: 2px solid rgba(255, 215, 0, 0.5);">
+                            <div class="stat-icon">🏆</div>
+                            <div class="stat-value" id="yourRank">-</div>
+                            <div class="stat-label">Your Ranking</div>
+                            <div id="rankComparison" style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.9;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Global Stats Section -->
-            <h2 style="text-align: center; font-size: 2rem; margin-bottom: 1.5rem;" id="globalStatsHeader">
-                🌍 Global Statistics
-            </h2>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">🎯</div>
-                    <div class="stat-value" id="totalClicks">0</div>
-                    <div class="stat-label">Total Clicks</div>
-                </div>
+            <div class="container">
+                <h2 class="text-center mb-4" style="font-size: 2rem;" id="globalStatsHeader">
+                    🌍 Global Statistics
+                </h2>
+                <div class="row g-3">
+                    <div class="col-6 col-sm-6 col-md-4 col-lg-3">
+                        <div class="stat-card">
+                            <div class="stat-icon">🎯</div>
+                            <div class="stat-value" id="totalClicks">0</div>
+                            <div class="stat-label">Total Clicks</div>
+                        </div>
+                    </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon">👥</div>
-                    <div class="stat-value" id="totalSessions">0</div>
-                    <div class="stat-label">Total Visitors</div>
-                </div>
+                    <div class="col-6 col-sm-6 col-md-4 col-lg-3">
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-value" id="totalSessions">0</div>
+                            <div class="stat-label">Total Visitors</div>
+                        </div>
+                    </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon">📊</div>
-                    <div class="stat-value" id="clickRate">0%</div>
-                    <div class="stat-label">Click Rate</div>
-                </div>
+                    <div class="col-6 col-sm-6 col-md-4 col-lg-3">
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-value" id="clickRate">0%</div>
+                            <div class="stat-label">Click Rate</div>
+                        </div>
+                    </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon">⏱️</div>
-                    <div class="stat-value" id="avgTime">0s</div>
-                    <div class="stat-label">Avg Time to Click</div>
-                </div>
+                    <div class="col-6 col-sm-6 col-md-4 col-lg-3">
+                        <div class="stat-card">
+                            <div class="stat-icon">⏱️</div>
+                            <div class="stat-value" id="avgTime">0s</div>
+                            <div class="stat-label">Avg Time to Click</div>
+                        </div>
+                    </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon">🚀</div>
-                    <div class="stat-value" id="fastestClick">-</div>
-                    <div class="stat-label">Fastest Click</div>
-                </div>
+                    <div class="col-6 col-sm-6 col-md-4 col-lg-3">
+                        <div class="stat-card">
+                            <div class="stat-icon">🚀</div>
+                            <div class="stat-value" id="fastestClick">-</div>
+                            <div class="stat-label">Fastest Click</div>
+                        </div>
+                    </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon">🐌</div>
-                    <div class="stat-value" id="slowestClick">-</div>
-                    <div class="stat-label">Slowest Click</div>
-                </div>
+                    <div class="col-6 col-sm-6 col-md-4 col-lg-3">
+                        <div class="stat-card">
+                            <div class="stat-icon">🐌</div>
+                            <div class="stat-value" id="slowestClick">-</div>
+                            <div class="stat-label">Slowest Click</div>
+                        </div>
+                    </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon">💔</div>
-                    <div class="stat-value" id="bounceRate">0%</div>
-                    <div class="stat-label">Bounce Rate</div>
-                </div>
+                    <div class="col-6 col-sm-6 col-md-4 col-lg-3">
+                        <div class="stat-card">
+                            <div class="stat-icon">💔</div>
+                            <div class="stat-value" id="bounceRate">0%</div>
+                            <div class="stat-label">Bounce Rate</div>
+                        </div>
+                    </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon">🔄</div>
-                    <div class="stat-value" id="reclickAttempts">0</div>
-                    <div class="stat-label">Reclick Attempts</div>
-                </div>
+                    <div class="col-6 col-sm-6 col-md-4 col-lg-3">
+                        <div class="stat-card">
+                            <div class="stat-icon">🔄</div>
+                            <div class="stat-value" id="reclickAttempts">0</div>
+                            <div class="stat-label">Reclick Attempts</div>
+                        </div>
+                    </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon">📅</div>
-                    <div class="stat-value" id="sessionsToday">0</div>
-                    <div class="stat-label">Visitors Today</div>
-                </div>
+                    <div class="col-6 col-sm-6 col-md-4 col-lg-3">
+                        <div class="stat-card">
+                            <div class="stat-icon">📅</div>
+                            <div class="stat-value" id="sessionsToday">0</div>
+                            <div class="stat-label">Visitors Today</div>
+                        </div>
+                    </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon">🎯</div>
-                    <div class="stat-value" id="clicksToday">0</div>
-                    <div class="stat-label">Clicks Today</div>
-                </div>
+                    <div class="col-6 col-sm-6 col-md-4 col-lg-3">
+                        <div class="stat-card">
+                            <div class="stat-icon">🎯</div>
+                            <div class="stat-value" id="clicksToday">0</div>
+                            <div class="stat-label">Clicks Today</div>
+                        </div>
+                    </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon">🌟</div>
-                    <div class="stat-value" id="mostActiveCountry">-</div>
-                    <div class="stat-label">Most Active Country</div>
-                </div>
+                    <div class="col-6 col-sm-6 col-md-4 col-lg-3">
+                        <div class="stat-card">
+                            <div class="stat-icon">🌟</div>
+                            <div class="stat-value" id="mostActiveCountry">-</div>
+                            <div class="stat-label">Most Active Country</div>
+                        </div>
+                    </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon">🌐</div>
-                    <div class="stat-value" id="mostPopularBrowser">-</div>
-                    <div class="stat-label">Most Popular Browser</div>
+                    <div class="col-6 col-sm-6 col-md-4 col-lg-3">
+                        <div class="stat-card">
+                            <div class="stat-icon">🌐</div>
+                            <div class="stat-value" id="mostPopularBrowser">-</div>
+                            <div class="stat-label">Most Popular Browser</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="charts-section">
-                <div class="chart-container">
-                    <h3 class="chart-title">🌍 Clicks by Country</h3>
-                    <canvas id="countryChart"></canvas>
+            <div class="container mt-4">
+                <div class="row g-3">
+                    <div class="col-12 col-lg-6">
+                        <div class="chart-container">
+                            <h3 class="chart-title">🌍 Clicks by Country</h3>
+                            <canvas id="countryChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                        <div class="chart-container">
+                            <h3 class="chart-title">⏱️ Average Time by Country</h3>
+                            <canvas id="timeChart"></canvas>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="chart-container">
-                    <h3 class="chart-title">⏱️ Average Time by Country</h3>
-                    <canvas id="timeChart"></canvas>
-                </div>
-            </div>
+                <div class="row g-3 mt-2">
+                    <div class="col-12 col-lg-4">
+                        <div class="recent-clicks-list">
+                            <h3 class="chart-title">🔥 Recent Clicks</h3>
+                            <div id="recentClicksList"></div>
+                        </div>
+                    </div>
 
-            <div class="recent-clicks">
-                <div class="recent-clicks-list">
-                    <h3 class="chart-title">🔥 Recent Clicks</h3>
-                    <div id="recentClicksList"></div>
-                </div>
-            </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="recent-clicks-list">
+                            <h3 class="chart-title">🔗 Top Referring Sites</h3>
+                            <div id="topReferrersList"></div>
+                        </div>
+                    </div>
 
-            <div class="recent-clicks">
-                <div class="recent-clicks-list">
-                    <h3 class="chart-title">🔗 Top Referring Sites</h3>
-                    <div id="topReferrersList"></div>
-                </div>
-            </div>
-
-            <div class="recent-clicks">
-                <div class="recent-clicks-list">
-                    <h3 class="chart-title">🌐 Top Browsers</h3>
-                    <div id="topBrowsersList"></div>
+                    <div class="col-12 col-lg-4">
+                        <div class="recent-clicks-list">
+                            <h3 class="chart-title">🌐 Top Browsers</h3>
+                            <div id="topBrowsersList"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -961,5 +992,6 @@
             }
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
