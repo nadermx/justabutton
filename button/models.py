@@ -15,6 +15,8 @@ class PageSession(models.Model):
     country_name = models.CharField(max_length=100, blank=True)
     referrer = models.TextField(blank=True, help_text="HTTP Referer header - where visitor came from")
     reclick_attempts = models.IntegerField(default=0, help_text="Number of times user tried to click after already clicking")
+    browser_name = models.CharField(max_length=50, blank=True, help_text="Browser name (Chrome, Firefox, Safari, etc.)")
+    browser_version = models.CharField(max_length=50, blank=True, help_text="Browser version")
 
     class Meta:
         ordering = ['-loaded_at']

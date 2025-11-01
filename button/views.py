@@ -51,6 +51,16 @@ def create_session(request):
     user_agent = request.META.get('HTTP_USER_AGENT', '')
     referrer = request.META.get('HTTP_REFERER', '')
 
+    # Get browser info from request body
+    browser_name = ''
+    browser_version = ''
+    try:
+        data = json.loads(request.body) if request.body else {}
+        browser_name = data.get('browser_name', '')
+        browser_version = data.get('browser_version', '')
+    except:
+        pass
+
     # Get country info
     country_info = get_country_from_ip(ip)
 
@@ -58,6 +68,8 @@ def create_session(request):
         ip_address=ip,
         user_agent=user_agent,
         referrer=referrer,
+        browser_name=browser_name,
+        browser_version=browser_version,
         country_code=country_info['country_code'],
         country_name=country_info['country_name']
     )
@@ -184,6 +196,13 @@ def get_stats(request):
         for domain, count in sorted(referrer_domains.items(), key=lambda x: x[1], reverse=True)[:10]
     ]
 
+    # Browser statistics
+    browser_stats = PageSession.objects.exclude(
+        browser_name=''
+    ).values('browser_name').annotate(
+        count=Count('session_id')
+    ).order_by('-count')[:10]
+
     return JsonResponse({
         'total_sessions': total_sessions,
         'total_clicks': total_clicks,
@@ -196,5 +215,6 @@ def get_stats(request):
         'country_stats': list(country_stats),
         'recent_clicks': recent_list,
         'total_reclick_attempts': total_reclicks,
-        'top_referrers': referrer_stats
+        'top_referrers': referrer_stats,
+        'browser_stats': list(browser_stats)
     })

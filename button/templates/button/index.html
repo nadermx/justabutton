@@ -285,6 +285,32 @@
         </button>
 
         <div id="stats">
+            <!-- Personal Stats Section (only shown after clicking) -->
+            <div id="personalStats" style="display: none;">
+                <h2 style="text-align: center; font-size: 2rem; margin-bottom: 1.5rem; color: #ffd43b;">
+                    ⭐ Your Performance ⭐
+                </h2>
+                <div class="stats-grid" style="max-width: 800px; margin: 0 auto 3rem;">
+                    <div class="stat-card" id="yourTimeCard" style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 193, 7, 0.2)); border: 2px solid rgba(255, 215, 0, 0.5);">
+                        <div class="stat-icon">⏰</div>
+                        <div class="stat-value" id="yourTimeValue">0s</div>
+                        <div class="stat-label">Your Time</div>
+                        <div id="yourComparison" style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.9;"></div>
+                    </div>
+
+                    <div class="stat-card" id="yourRankCard" style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 193, 7, 0.2)); border: 2px solid rgba(255, 215, 0, 0.5);">
+                        <div class="stat-icon">🏆</div>
+                        <div class="stat-value" id="yourRank">-</div>
+                        <div class="stat-label">Your Ranking</div>
+                        <div id="rankComparison" style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.9;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Global Stats Section -->
+            <h2 style="text-align: center; font-size: 2rem; margin-bottom: 1.5rem;" id="globalStatsHeader">
+                🌍 Global Statistics
+            </h2>
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon">🎯</div>
@@ -329,12 +355,6 @@
                 </div>
 
                 <div class="stat-card">
-                    <div class="stat-icon">⏰</div>
-                    <div class="stat-value" id="yourTime">0s</div>
-                    <div class="stat-label">Your Time</div>
-                </div>
-
-                <div class="stat-card">
                     <div class="stat-icon">🔄</div>
                     <div class="stat-value" id="reclickAttempts">0</div>
                     <div class="stat-label">Reclick Attempts</div>
@@ -366,11 +386,22 @@
                     <div id="topReferrersList"></div>
                 </div>
             </div>
+
+            <div class="recent-clicks">
+                <div class="recent-clicks-list">
+                    <h3 class="chart-title">🌐 Top Browsers</h3>
+                    <div id="topBrowsersList"></div>
+                </div>
+            </div>
         </div>
     </div>
 
     <footer>
-        <p>Made with curiosity 🎲 | Track every click, celebrate every visitor</p>
+        <p>
+            Made with curiosity 🎲 |
+            An <a href="https://github.com/nadermx/justabutton" target="_blank" style="color: #ffd43b; text-decoration: none; font-weight: bold;">open source</a> project by
+            <a href="https://john.nader.mx" target="_blank" style="color: #ffd43b; text-decoration: none; font-weight: bold;">nadermx</a>
+        </p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
@@ -406,11 +437,46 @@
             return String.fromCodePoint(...codePoints);
         };
 
+        // Detect browser information
+        function detectBrowser() {
+            const ua = navigator.userAgent;
+            let browserName = 'Unknown';
+            let browserVersion = '';
+
+            if (ua.indexOf('Firefox') > -1) {
+                browserName = 'Firefox';
+                browserVersion = ua.match(/Firefox\/([0-9.]+)/)?.[1] || '';
+            } else if (ua.indexOf('Edg') > -1) {
+                browserName = 'Edge';
+                browserVersion = ua.match(/Edg\/([0-9.]+)/)?.[1] || '';
+            } else if (ua.indexOf('Chrome') > -1) {
+                browserName = 'Chrome';
+                browserVersion = ua.match(/Chrome\/([0-9.]+)/)?.[1] || '';
+            } else if (ua.indexOf('Safari') > -1) {
+                browserName = 'Safari';
+                browserVersion = ua.match(/Version\/([0-9.]+)/)?.[1] || '';
+            } else if (ua.indexOf('Opera') > -1 || ua.indexOf('OPR') > -1) {
+                browserName = 'Opera';
+                browserVersion = ua.match(/(?:Opera|OPR)\/([0-9.]+)/)?.[1] || '';
+            }
+
+            return { browserName, browserVersion };
+        }
+
         // Initialize session on page load
         async function initSession() {
             try {
+                const browserInfo = detectBrowser();
+
                 const response = await fetch('/api/session/', {
                     method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        browser_name: browserInfo.browserName,
+                        browser_version: browserInfo.browserVersion
+                    })
                 });
                 const data = await response.json();
                 sessionId = data.session_id;
@@ -455,20 +521,57 @@
                 document.getElementById('bounceRate').textContent = stats.bounce_rate.toFixed(1) + '%';
                 document.getElementById('reclickAttempts').textContent = stats.total_reclick_attempts.toLocaleString();
 
-                // Update "Your Time" - show special message if not clicked yet
-                const yourTimeEl = document.getElementById('yourTime');
+                // Update personal stats section
                 if (yourTime !== null) {
-                    yourTimeEl.textContent = yourTime.toFixed(2) + 's';
-                    // Highlight the user's time with animation
-                    yourTimeEl.parentElement.style.background = 'rgba(255, 215, 0, 0.3)';
-                    yourTimeEl.parentElement.style.transform = 'scale(1.05)';
-                    setTimeout(() => {
-                        yourTimeEl.parentElement.style.background = '';
-                        yourTimeEl.parentElement.style.transform = '';
-                    }, 2000);
-                } else {
-                    yourTimeEl.textContent = 'Click to see!';
-                    yourTimeEl.style.fontSize = '1.5rem';
+                    // Show personal stats section
+                    document.getElementById('personalStats').style.display = 'block';
+
+                    // Update your time
+                    document.getElementById('yourTimeValue').textContent = yourTime.toFixed(2) + 's';
+
+                    // Calculate comparison to average
+                    const avgTime = stats.avg_time_to_click;
+                    let comparison = '';
+                    let rankInfo = '';
+
+                    if (avgTime > 0) {
+                        const diff = ((yourTime - avgTime) / avgTime * 100).toFixed(1);
+                        if (yourTime < avgTime) {
+                            comparison = `🚀 ${Math.abs(diff)}% faster than average!`;
+                        } else if (yourTime > avgTime) {
+                            comparison = `🐌 ${diff}% slower than average`;
+                        } else {
+                            comparison = `Exactly average!`;
+                        }
+                    }
+
+                    // Calculate ranking (how many were faster)
+                    if (stats.fastest_click && stats.slowest_click) {
+                        const totalClickers = stats.clicked_sessions;
+                        let estimatedRank = 'Top ';
+
+                        if (yourTime === stats.fastest_click) {
+                            estimatedRank = '🥇 #1';
+                            rankInfo = 'Fastest click!';
+                        } else if (yourTime === stats.slowest_click) {
+                            estimatedRank = `#${totalClickers}`;
+                            rankInfo = 'Slowest click';
+                        } else {
+                            // Estimate position based on time range
+                            const range = stats.slowest_click - stats.fastest_click;
+                            const position = (yourTime - stats.fastest_click) / range;
+                            const estimatedPos = Math.ceil(position * totalClickers);
+                            estimatedRank = `~#${estimatedPos}`;
+
+                            const percentile = ((totalClickers - estimatedPos) / totalClickers * 100).toFixed(0);
+                            rankInfo = `Top ${percentile}% of clickers`;
+                        }
+
+                        document.getElementById('yourRank').textContent = estimatedRank;
+                        document.getElementById('rankComparison').textContent = rankInfo;
+                    }
+
+                    document.getElementById('yourComparison').textContent = comparison;
                 }
 
                 // Create country charts
@@ -482,6 +585,9 @@
 
                 // Display top referrers
                 displayTopReferrers(stats.top_referrers);
+
+                // Display top browsers
+                displayTopBrowsers(stats.browser_stats);
 
                 // Show stats section
                 document.getElementById('stats').classList.add('show');
@@ -652,6 +758,44 @@
                         <span>${referrer.domain}</span>
                     </div>
                     <div class="click-time">${referrer.visits} visit${referrer.visits !== 1 ? 's' : ''}</div>
+                `;
+
+                container.appendChild(item);
+            });
+        }
+
+        // Display top browsers
+        function displayTopBrowsers(browserStats) {
+            const container = document.getElementById('topBrowsersList');
+            container.innerHTML = '';
+
+            if (!browserStats || browserStats.length === 0) {
+                container.innerHTML = '<p class="loading">No browser data yet.</p>';
+                return;
+            }
+
+            const browserEmojis = {
+                'Chrome': '🌐',
+                'Firefox': '🦊',
+                'Safari': '🧭',
+                'Edge': '🔷',
+                'Opera': '🅾️',
+                'Unknown': '❓'
+            };
+
+            browserStats.forEach((browser, index) => {
+                const item = document.createElement('div');
+                item.className = 'click-item';
+                item.style.animationDelay = `${index * 0.05}s`;
+
+                const emoji = browserEmojis[browser.browser_name] || '🌐';
+
+                item.innerHTML = `
+                    <div class="click-country">
+                        <span class="flag">${emoji}</span>
+                        <span>${browser.browser_name}</span>
+                    </div>
+                    <div class="click-time">${browser.count} visitor${browser.count !== 1 ? 's' : ''}</div>
                 `;
 
                 container.appendChild(item);
