@@ -41,18 +41,24 @@ def get_ip2location_db():
 
 def get_country_from_ip(ip):
     """Get country information from IP address using local IP2Location database"""
+    # Skip invalid IPs
+    if not ip or ip in ['127.0.0.1', 'localhost', '::1']:
+        return {'country_code': '', 'country_name': ''}
+
     try:
         # Try local IP2Location database first
         db = get_ip2location_db()
         if db:
             rec = db.get_all(ip)
-            if rec and rec.country_short != '-':
+            if rec and rec.country_short and rec.country_short != '-':
                 return {
                     'country_code': rec.country_short,
                     'country_name': rec.country_long
                 }
     except Exception as e:
-        print(f"IP2Location error: {e}")
+        # Log error but continue to fallback
+        import logging
+        logging.error(f"IP2Location error for IP {ip}: {e}")
 
     # Fallback to ip-api.com if local database fails
     try:
@@ -64,8 +70,9 @@ def get_country_from_ip(ip):
                     'country_code': data.get('countryCode', ''),
                     'country_name': data.get('country', '')
                 }
-    except:
-        pass
+    except Exception as e:
+        import logging
+        logging.error(f"ip-api error for IP {ip}: {e}")
 
     return {'country_code': '', 'country_name': ''}
 
@@ -82,6 +89,10 @@ def create_session(request):
     ip = get_client_ip(request)
     user_agent = request.META.get('HTTP_USER_AGENT', '')
     referrer = request.META.get('HTTP_REFERER', '')
+
+    # Debug logging
+    import logging
+    logging.info(f"New session - IP: {ip}, X-Forwarded-For: {request.META.get('HTTP_X_FORWARDED_FOR', 'None')}")
 
     # Get browser info from request body
     browser_name = ''
