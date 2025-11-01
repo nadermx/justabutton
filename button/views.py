@@ -121,7 +121,7 @@ def get_stats(request):
     ).exclude(
         country_name=''
     ).values('country_name', 'country_code').annotate(
-        clicks=Count('id'),
+        clicks=Count('session_id'),
         avg_time=Avg('time_to_click')
     ).order_by('-clicks')
 
